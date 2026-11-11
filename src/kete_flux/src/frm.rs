@@ -80,8 +80,11 @@ pub(crate) fn frm_nodes(sun2obj: &Vector3<f64>, sun2obs: &Vector3<f64>) -> Vec<(
         .facets
         .iter()
         .filter_map(|facet| {
-            let frac = frm_facet_temperature(&facet.normal, 1.0, &obj2sun);
             let observed = -facet.normal.dot(&obs2obj_hat);
+            if observed <= 0.0 {
+                return None;
+            }
+            let frac = frm_facet_temperature(&facet.normal, 1.0, &obj2sun);
             (frac > 0.0 && observed > 0.0).then_some((observed * PI * facet.area, frac))
         })
         .collect()
