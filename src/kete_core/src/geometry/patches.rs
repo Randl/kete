@@ -493,6 +493,7 @@ fn convex_contains<'a>(
     obs_to_obj: &Vector<Equatorial>,
 ) -> Contains {
     let mut closest_edge = f64::NEG_INFINITY;
+    let mut outside = false;
     for normal in normals {
         let d = obs_to_obj.dot(normal);
         if d.is_nan() {
@@ -500,12 +501,11 @@ fn convex_contains<'a>(
         }
         // Of all the edges the object is outside of, the farthest plane bounds
         // the distance the object must move to be inside.
-        if d.is_sign_negative() && d.abs() > closest_edge {
-            closest_edge = d.abs();
-        }
+        outside |= d.is_sign_negative();
+        closest_edge = closest_edge.max(-d);
     }
     match closest_edge {
-        x if x.is_finite() => Contains::Outside(x.min(obs_to_obj.norm())),
+        x if outside && x.is_finite() => Contains::Outside(x.abs().min(obs_to_obj.norm())),
         _ => Contains::Inside,
     }
 }
