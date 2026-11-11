@@ -29,10 +29,9 @@ pub fn frm_facet_temperature(
     subsolar_temp: f64,
     obj2sun: &UnitVector3<f64>,
 ) -> f64 {
-    // since the facet normals are length 1, and the sun_norm vec is length one, the
-    // angle difference is arcsin(z_sun) - arcsin(z_normal)
-
-    let tmp = (facet_normal.z.asin() - obj2sun.z.asin()).cos();
+    // cos(asin(a) - asin(b)) uses the nonnegative cosines of both latitudes.
+    let tmp = (1.0 - facet_normal.z.powi(2)).sqrt() * (1.0 - obj2sun.z.powi(2)).sqrt()
+        + facet_normal.z * obj2sun.z;
     if tmp > 0.0 {
         return tmp.sqrt().sqrt() * subsolar_temp;
     }
